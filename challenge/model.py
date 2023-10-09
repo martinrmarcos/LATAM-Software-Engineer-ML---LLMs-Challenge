@@ -19,6 +19,8 @@ class DelayModel:
         self
     ):
         self._model = None # Model should be saved in this attribute.
+        self._preprocess = pre_process()
+        self.top_10_features = None
 
     def preprocess(
         self,
@@ -37,32 +39,29 @@ class DelayModel:
             or
             pd.DataFrame: features.
         """
-        
         ### Using the class pre_process to get the features ready for training or prediction
-        preprocess = pre_process()
-        print(data)
-        data = preprocess.get_features(data, target_column)
+        
+
+        data = self._preprocess.get_features(data, target_column)
 
         cat_features = ['OPERA', 'SIGLADES', 'DIANOM', 'TIPOVUELO', 'MES']
-        data = preprocess.get_dummies(data, cat_features)
-
-        top_10_features = ['TIPOVUELO_I',
-                            'OPERA_Copa Air',
-                            'MES_12',
-                            'OPERA_Air Canada',
-                            'OPERA_Qantas Airways',
-                            'MES_7',
-                            'OPERA_Gol Trans',
-                            'OPERA_American Airlines',
-                            'OPERA_Aeromexico',
-                            'OPERA_Delta Air']
-        features = data[top_10_features]
 
         if target_column is not None:
             target = data[target_column]
+            features = data.drop(target_column, axis=1)
+            if self._model is None:
+                features = self._preprocess.get_dummies(features, cat_features)
+            else:
+                features = self._preprocess.get_dummies(features, cat_features, Trained = 'y')
             return features, target
         else:
+            features = data
+            if self._model is None:
+                features = self._preprocess.get_dummies(features, cat_features)
+            else:
+                features = self._preprocess.get_dummies(features, cat_features, Trained = 'y')
             return features
+
 
     def fit(
         self,
@@ -76,10 +75,7 @@ class DelayModel:
             features (pd.DataFrame): preprocessed data.
             target (pd.DataFrame): target.
         """
-        preprocess = pre_process()
-        
-        scale = preprocess.get_scale(target)
-
+        scale = self._preprocess.get_scale(target)
 
         features['delay'] = target
         features = shuffle(features)
@@ -87,6 +83,9 @@ class DelayModel:
         target = features['delay']
         features.drop('delay', axis=1, inplace=True)
 
+        self.top_10_features = self._preprocess.get_best_features(features, target, 10)
+
+        features = features[self.top_10_features]
         self._model = xgb.XGBClassifier(learning_rate=0.01, scale_pos_weight = scale)
         self._model.fit(features, target) 
         return
@@ -107,5 +106,5 @@ class DelayModel:
         if self._model is None:
             return print('Model not trained yet. Please run fit method first.')
         else:
-            predictions = self._model.predict(features)
+            predictions = self._model.predict(features[self.top_10_features])
             return predictions
