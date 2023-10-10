@@ -12,7 +12,7 @@ help:             	## Show the help.
 venv:			## Create a virtual environment
 	@echo "Creating virtualenv ..."
 	@rm -rf .venv
-	@python3 -m venv .venv
+	@python3.8 -m venv .venv
 	@./.venv/bin/pip install -U pip
 	@echo
 	@echo "Run 'source .venv/bin/activate' to enable the environment"
@@ -34,6 +34,7 @@ stress-test:
 model-test:			## Run tests and coverage
 	mkdir reports || true
 	pytest --cov-config=.coveragerc --cov-report term --cov-report html:reports/html --cov-report xml:reports/coverage.xml --junitxml=reports/junit.xml --cov=challenge tests/model
+
 
 .PHONY: api-test
 api-test:			## Run tests and coverage
