@@ -1,1 +1,12 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="4" time="26.164" timestamp="2023-10-09T23:15:21.583686" hostname="Martins-MBP.fibertel.com.ar"><testcase classname="tests.model.test_model.TestModel" name="test_model_fit" time="5.798" /><testcase classname="tests.model.test_model.TestModel" name="test_model_predict" time="5.884" /><testcase classname="tests.model.test_model.TestModel" name="test_model_preprocess_for_serving" time="6.102" /><testcase classname="tests.model.test_model.TestModel" name="test_model_preprocess_for_training" time="6.074" /></testsuite></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite errors="1" failures="0" hostname="Martins-MBP.fibertel.com.ar" name="pytest" skipped="0" tests="1" time="2.279" timestamp="2023-10-10T19:27:54.893430"><testcase classname="" name="tests.api.test_api" time="0.000"><error message="collection failure">ImportError while importing test module '/Users/martinmarcos/ML Martin Marcos/LATAM test/IA/challenge/LATAM-Software-Engineer-ML---LLMs-Challenge/tests/api/test_api.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../../../.pyenv/versions/3.7.3/lib/python3.7/importlib/__init__.py:127: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/api/test_api.py:4: in &lt;module&gt;
+    from challenge import api
+challenge/__init__.py:1: in &lt;module&gt;
+    from challenge.api import app
+challenge/api.py:8: in &lt;module&gt;
+    from model import DelayModel
+E   ModuleNotFoundError: No module named 'model'</error></testcase></testsuite></testsuites>
