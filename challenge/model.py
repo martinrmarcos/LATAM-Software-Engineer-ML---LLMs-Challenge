@@ -6,10 +6,11 @@ import warnings
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 from sklearn.metrics import confusion_matrix, classification_report
+
 import xgboost as xgb
 from xgboost import plot_importance
 
-from preprocessclass import pre_process
+from .preprocessclass import pre_process
 
 from typing import Tuple, Union, List
 
@@ -53,14 +54,14 @@ class DelayModel:
                 features = self._preprocess.get_dummies(features, cat_features)
             else:
                 features = self._preprocess.get_dummies(features, cat_features, Trained = 'y')
-            return features, target
+            return pd.DataFrame(features).reset_index(drop=True), pd.DataFrame(target).reset_index(drop=True)
         else:
             features = data
             if self._model is None:
                 features = self._preprocess.get_dummies(features, cat_features)
             else:
                 features = self._preprocess.get_dummies(features, cat_features, Trained = 'y')
-            return features
+            return pd.DataFrame(features).reset_index(drop=True)
 
 
     def fit(
@@ -75,19 +76,17 @@ class DelayModel:
             features (pd.DataFrame): preprocessed data.
             target (pd.DataFrame): target.
         """
+        target = target.iloc[:, 0]
+
+
+
         scale = self._preprocess.get_scale(target)
 
-        features['delay'] = target
-        features = shuffle(features)
-
-        target = features['delay']
-        features.drop('delay', axis=1, inplace=True)
 
         self.top_10_features = self._preprocess.get_best_features(features, target, 10)
 
-        features = features[self.top_10_features]
         self._model = xgb.XGBClassifier(learning_rate=0.01, scale_pos_weight = scale)
-        self._model.fit(features, target) 
+        self._model.fit(features[self.top_10_features], target) 
         return
 
     def predict(
@@ -103,8 +102,8 @@ class DelayModel:
         Returns:
             (List[int]): predicted targets.
         """
+        #features = self.preprocess(features)
         if self._model is None:
             return print('Model not trained yet. Please run fit method first.')
         else:
-            predictions = self._model.predict(features[self.top_10_features])
-            return predictions
+            return self._model.predict(features[self.top_10_features]).tolist()

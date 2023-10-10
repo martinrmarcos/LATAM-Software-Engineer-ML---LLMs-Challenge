@@ -10,12 +10,9 @@ import re
 import json
 import re
 from collections import Counter
-import unidecode
-import unicodedata
-import emoji
-from sqlalchemy import create_engine
 import xgboost as xgb
 from xgboost import plot_importance
+from datetime import datetime
 
 
 class pre_process():
@@ -27,8 +24,21 @@ class pre_process():
             data = data[['OPERA', 'MES', 'TIPOVUELO', 'SIGLADES', 'DIANOM']]
             return data
         else:
+            data = self.get_delay(data)
             data = data[['OPERA', 'MES', 'TIPOVUELO', 'SIGLADES', 'DIANOM', target_column]]
             return data
+        
+    def get_delay(self, data, threshold_in_minutes = 15):
+        def get_min_diff(data):
+            fecha_o = datetime.strptime(data['Fecha-O'], '%Y-%m-%d %H:%M:%S')
+            fecha_i = datetime.strptime(data['Fecha-I'], '%Y-%m-%d %H:%M:%S')
+            min_diff = ((fecha_o - fecha_i).total_seconds())/60
+            return min_diff
+        
+        data['min_diff'] = data.apply(get_min_diff, axis = 1)
+        data['delay'] = np.where(data['min_diff'] > threshold_in_minutes, 1, 0)
+        data.drop('min_diff', axis=1, inplace=True)
+        return data
 
     def get_dummies(self, features, cat_features, Trained=None):
         # # Generate dummy variables based on the trained features
