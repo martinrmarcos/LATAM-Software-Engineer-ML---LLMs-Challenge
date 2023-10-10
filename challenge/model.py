@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 import warnings
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
@@ -10,7 +9,7 @@ from sklearn.metrics import confusion_matrix, classification_report
 import xgboost as xgb
 from xgboost import plot_importance
 
-from .preprocessclass import pre_process
+from preprocessclass import pre_process
 
 from typing import Tuple, Union, List
 
@@ -87,6 +86,7 @@ class DelayModel:
 
         self._model = xgb.XGBClassifier(learning_rate=0.01, scale_pos_weight = scale)
         self._model.fit(features[self.top_10_features], target) 
+        
         return
 
     def predict(

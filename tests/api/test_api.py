@@ -1,7 +1,7 @@
 import unittest
 
 from fastapi.testclient import TestClient
-from challenge import app
+from challenge import api
 
 
 class TestBatchPipeline(unittest.TestCase):

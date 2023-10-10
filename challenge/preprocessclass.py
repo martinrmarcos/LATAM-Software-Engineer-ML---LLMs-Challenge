@@ -3,7 +3,6 @@
 import numpy as np
 import pandas as pd
 import os
-import seaborn as sns
 import matplotlib.pyplot as plt
 import sys
 import re
@@ -21,11 +20,21 @@ class pre_process():
     
     def get_features(self, data, target_column):
         if target_column is None:
-            data = data[['OPERA', 'MES', 'TIPOVUELO', 'SIGLADES', 'DIANOM']]
+            columns = ['OPERA', 'MES', 'TIPOVUELO', 'SIGLADES', 'DIANOM']
+            present_columns = [col for col in columns if col in data.columns]
+            missing_columns = [col for col in columns if col not in data.columns]
+            for col in missing_columns:
+                data[col] = pd.Series(dtype='object')
+            data = data[present_columns]
             return data
         else:
             data = self.get_delay(data)
-            data = data[['OPERA', 'MES', 'TIPOVUELO', 'SIGLADES', 'DIANOM', target_column]]
+            columns = ['OPERA', 'MES', 'TIPOVUELO', 'SIGLADES', 'DIANOM', target_column]
+            present_columns = [col for col in columns if col in data.columns]
+            missing_columns = [col for col in columns if col not in data.columns]
+            for col in missing_columns:
+                data[col] = pd.Series(dtype='object')
+            data = data[present_columns]
             return data
         
     def get_delay(self, data, threshold_in_minutes = 15):
@@ -51,13 +60,14 @@ class pre_process():
             return features
         else:
             for _feature in cat_features:
-                dummies = pd.get_dummies(features[_feature], prefix=_feature, drop_first=True)
-                features = pd.concat([features, dummies], axis=1)
-                features.drop(_feature, axis=1, inplace=True)
-            features = features.reindex(columns=self.dummies, fill_value=0)
-            return features
-
-        
+                try:
+                    dummies = pd.get_dummies(features[_feature], prefix=_feature, drop_first=True)
+                    features = pd.concat([features, dummies], axis=1)
+                    features.drop(_feature, axis=1, inplace=True)
+                except:
+                    pass
+            return features.reindex(columns=self.dummies, fill_value=0)
+    
     def get_scale(self, target):
         n_y0 = len(target[target == 0])
         n_y1 = len(target[target == 1])
